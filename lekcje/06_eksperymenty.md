@@ -32,10 +32,10 @@ Tabela do notatek (bazowy = lekcja 5, 2 warstwy × 64, 600 kroków):
 | # | Eksperyment | val @600 | Co widać w tekście | Wniosek |
 |---|-------------|----------|--------------------|---------|
 | 0 | bazowy | ~2.07 | | |
-| 1 | overfitting na życzenie | | | |
-| 2 | bez residual (4 warstwy) | | | |
-| 3 | 4 warstwy z residual | | | |
-| 4 | bez pos_emb | | | |
+| 1 | overfitting na życzenie | (val ~4.9, train ~0.5) | | |
+| 2 | bez residual (4 warstwy) | (~3.3) | | |
+| 3 | 4 warstwy z residual | (~2.09) | | |
+| 4 | bez pos_emb | (~2.31) | | |
 | 5 | bez LayerNorm | | | |
 | 6 | dropout 0.2 | | | |
 | 7 | block_size 16 | | | |
@@ -51,7 +51,7 @@ Obetnij dane treningowe do 0.5% (`train = train[:5000]`). 600 kroków.
 
 W `Block.__call__` zamień `x = x + self.attn(...)` na `x = self.attn(...)` (i tak samo dla mlp). Uruchom z `n_layer=4`. Potem to samo **z** residualem.
 
-> ✅ **Sprawdź:** bez residual po 100 krokach loss ~3.3 (z residualem: ~2.5), po 600 krokach nadal ~2.6–2.9 i stoi — gradient nie dociera do dolnych warstw. Z residualem 4 warstwy: ~2.0, lepiej niż 2 warstwy. **Residual = różnica między "głębiej = lepiej" a "głębiej = nie da się wytrenować".** Przy 8+ warstwach bez residuala model w ogóle nie ruszy z 4.17.
+> ✅ **Sprawdź:** bez residual po 100 krokach loss ~3.35 (z residualem: ~2.55) i **stoi na 3.3 do końca** — gorzej niż bigram (2.48)! Gradient nie dociera do dolnych warstw, model używa efektywnie jednej warstwy. Z residualem 4 warstwy: ~2.09 po 600 krokach (tyle co 2 warstwy przy tym budżecie; przewaga głębszego modelu ujawnia się przy dłuższym treningu — sekcja 5). **Residual = różnica między "głębiej = lepiej" a "głębiej = nie da się wytrenować".** Przy 8+ warstwach bez residuala model w ogóle nie ruszy z 4.17.
 
 ### E4 — bez pozycji
 

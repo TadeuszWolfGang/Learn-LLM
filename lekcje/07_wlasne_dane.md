@@ -40,7 +40,7 @@ python3 moj/05_train.py --data data/incidents.txt --out out_inc
 
 (albo zmień ścieżkę w kodzie). 1000 kroków wystarczy — korpus jest bardzo regularny.
 
-> ✅ **Sprawdź:** loss spada **dużo szybciej i niżej** niż na Szekspirze: po 1000 krokach val ~0.6–0.8 (Szekspir: 1.9). Nie dlatego, że model jest mądrzejszy — dane są przewidywalne (szablony). Perplexity ~2 = model waha się średnio między 2 znakami. To pierwszy sygnał: **niski loss ≠ inteligencja, niski loss = przewidywalne dane.**
+> ✅ **Sprawdź:** loss spada **dużo szybciej i niżej** niż na Szekspirze: po 300 krokach val ~0.6, po 1000 ~0.36 (Szekspir po 1000: 1.9). Nie dlatego, że model jest mądrzejszy — dane są przewidywalne (szablony). Perplexity ~1.4 = model waha się średnio między jednym a dwoma znakami. To pierwszy sygnał: **niski loss ≠ inteligencja, niski loss = przewidywalne dane.**
 
 ### Krok 2.3 — oglądaj, co wygenerował
 
@@ -56,6 +56,19 @@ Przeczytaj uważnie 3–4 wygenerowane incydenty i **zaznacz w notatkach**:
 2. Czy IP wyglądają jak IP? — *będą*, ale losowe.
 3. Czy `wniosek` pasuje do metryk powyżej? Np. po `loss: 8%` jest `L1/L2`? — *często tak*: model złapał korelację "słowo loss z dużą liczbą → L1/L2". Ale spróbuj promptu z `loss: 0%` i `RTT: teraz 900 ms` — czasem nadal napisze L1/L2. Bo nie porównuje liczb; dopasowuje wzorzec tekstowy.
 4. Czy `akcja` odnosi się do **tego samego** site'u/aplikacji co nagłówek? — *rzadko*. Kontekst 64 znaków nie sięga od nagłówka do akcji (blok ma ~350 znaków). Model "zapomniał" nagłówek. To jest **bezpośrednio** ograniczenie `block_size`.
+
+Przykład z modelu wytrenowanego 1000 kroków (T=0.5):
+
+```
+[0:40] INCYDENT 2705 | AZR-WE -> AZR-WE | backup TCP/22
+flow: 10.24.9.190:18928 -> 10.212.47.23:5060
+RTT: 18 ms w jedna strone, 378 ms w druga
+TTL: rozne wartosci na sciezkach tam/powrot (50 vs 46)
+wniosek: routing asymetryczny -> powrot idzie inna, dluzsza sciezka
+akcja: sprawdz tablice routingu i BGP preferencje w GDA-OFF
+```
+
+Format i para "RTT asymetryczny → routing asymetryczny" bezbłędne (to jest w zasięgu 64 znaków). Ale: godzina `0:40` zamiast `00:40`, port `5060` przy `TCP/22`, a akcja wskazuje `GDA-OFF`, choć incydent jest w `AZR-WE` — wszystko, co wymaga spojrzenia dalej niż 64 znaki wstecz, jest losowe.
 
 ### Krok 2.4 — eksperyment: dłuższy kontekst
 
